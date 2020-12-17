@@ -1,0 +1,43 @@
+{
+  "generator-jhipster": {
+    "promptValues": {
+      "packageName": "com.looseboxes.service.auth"
+    },
+    "jhipsterVersion": "6.8.0",
+    "applicationType": "monolith",
+    "baseName": "authservice",
+    "packageName": "com.looseboxes.service.auth",
+    "packageFolder": "com/looseboxes/service/auth",
+    "serverPort": "8080",
+    "authenticationType": "jwt",
+    "cacheProvider": "ehcache",
+    "enableHibernateCache": true,
+    "websocket": false,
+    "databaseType": "sql",
+    "devDatabaseType": "h2Disk",
+    "prodDatabaseType": "mysql",
+    "searchEngine": false,
+    "messageBroker": false,
+    "serviceDiscoveryType": false,
+    "buildTool": "maven",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "NTYwOGM3MGM2YjA1MTYxOTY4KJQxMTIxMmJjOWVmZWY5YmM3NjRjNDAyN2Q2ZTg1NzBiNmRhNzFkNGExZGNhNjA0ODZmMGQ0ZTBmZjk3NjMxNzBmZjU3ZjM4MDQwYWM0Mjc5NjU1MmI3OWJlODdjNWIzZWVlYWMxNGRhNGYxMDk=",
+    "embeddableLaunchScript": false,
+    "useSass": true,
+    "clientPackageManager": "none",
+    "clientFramework": "none",
+    "clientTheme": "none",
+    "clientThemeVariant": "",
+    "creationTimestamp": 1608126392000,
+    "testFrameworks": [],
+    "jhiPrefix": "jhi",
+    "entitySuffix": "",
+    "dtoSuffix": "DTO",
+    "otherModules": [],
+    "enableTranslation": false,
+    "blueprints": [],
+    "reactive": false,
+    "skipFakeData": true,
+    "skipClient": true
+  }
+}

@@ -1,0 +1,22 @@
+entity OAuthUser {
+	id Integer required,
+	clientId String required maxlength(32),
+	url String required maxlength(255),
+	userKey String required maxlength(32),
+        userJson String required maxlength(10240),
+	timeCreated Instant required,
+	timeModified Instant required,
+	timeDeletedUnix Long required
+}
+
+
+
+relationship OneToOne {
+        OAuthUser{user required} to User
+}
+
+// Options
+service * with serviceClass
+paginate * with pagination
+dto * with mapstruct
+filter *
