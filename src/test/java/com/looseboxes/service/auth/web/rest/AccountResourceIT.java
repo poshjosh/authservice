@@ -2,11 +2,10 @@ package com.looseboxes.service.auth.web.rest;
 
 import com.looseboxes.service.auth.AuthserviceApp;
 import com.looseboxes.service.auth.config.Constants;
-import com.looseboxes.service.auth.domain.Authority;
 import com.looseboxes.service.auth.domain.User;
 import com.looseboxes.service.auth.repository.AuthorityRepository;
 import com.looseboxes.service.auth.repository.UserRepository;
-import com.looseboxes.service.auth.security.AuthoritiesConstants;
+import com.bc.service.util.AuthoritiesConstants;
 import com.looseboxes.service.auth.service.UserService;
 import com.looseboxes.service.auth.service.dto.PasswordChangeDTO;
 import com.looseboxes.service.auth.service.dto.UserDTO;
@@ -14,13 +13,11 @@ import com.looseboxes.service.auth.web.rest.vm.KeyAndPasswordVM;
 import com.looseboxes.service.auth.web.rest.vm.ManagedUserVM;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;

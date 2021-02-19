@@ -1,17 +1,15 @@
 package com.looseboxes.service.auth.web.rest;
 
 import com.looseboxes.service.auth.domain.User;
-import com.looseboxes.service.auth.repository.UserRepository;
-import com.looseboxes.service.auth.security.SecurityUtils;
-import com.looseboxes.service.auth.service.MailService;
-import com.looseboxes.service.auth.service.UserService;
+import com.looseboxes.service.auth.service.AccountService;
+import com.looseboxes.service.auth.ext.web.Endpoints;
+import com.looseboxes.service.auth.ext.web.rest.vm.Message;
 import com.looseboxes.service.auth.service.dto.PasswordChangeDTO;
 import com.looseboxes.service.auth.service.dto.UserDTO;
 import com.looseboxes.service.auth.web.rest.errors.*;
 import com.looseboxes.service.auth.web.rest.vm.KeyAndPasswordVM;
 import com.looseboxes.service.auth.web.rest.vm.ManagedUserVM;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,52 +17,56 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.*;
 
 /**
  * REST controller for managing the current user's account.
  */
 @RestController
-@RequestMapping("/api")
-public class AccountResource {
-
-    private static class AccountResourceException extends RuntimeException {
-        private AccountResourceException(String message) {
-            super(message);
-        }
-    }
+@RequestMapping(Endpoints.API)
+public class AccountResource{
 
     private final Logger log = LoggerFactory.getLogger(AccountResource.class);
 
-    private final UserRepository userRepository;
-
-    private final UserService userService;
-
-    private final MailService mailService;
-
-    public AccountResource(UserRepository userRepository, UserService userService, MailService mailService) {
-
-        this.userRepository = userRepository;
-        this.userService = userService;
-        this.mailService = mailService;
+    private final AccountService accountService;
+    
+    public AccountResource(AccountService accountService) {
+        this.accountService = accountService;
     }
 
+    /**
+     * {@code POST  /register} : register and activate the user.
+     * 
+     * This method obviates the need for a verification step (e.g via email) in 
+     * the activation process.
+     *
+     * @param managedUserVM the managed user View Model.
+     * @return {"message": [MESSAGE_FOR_THE_NEW_USER]}
+     * @throws InvalidPasswordLengthException {@code 400 (Bad Request)} if the password is incorrect.
+     * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already used.
+     * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already used.
+     */
+    @PostMapping("/register/activate")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDTO registerAccountAndActivate(@Valid @RequestBody ManagedUserVM managedUserVM) {
+        User user = accountService.registerAccountAndActivate(managedUserVM, managedUserVM.getPassword());
+        return managedUserVM;
+    }
+    
     /**
      * {@code POST  /register} : register the user.
      *
      * @param managedUserVM the managed user View Model.
-     * @throws InvalidPasswordException {@code 400 (Bad Request)} if the password is incorrect.
+     * @return {"message": [MESSAGE_FOR_THE_NEW_USER]}
+     * @throws InvalidPasswordLengthException {@code 400 (Bad Request)} if the password is incorrect.
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already used.
      * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already used.
      */
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
-        if (!checkPasswordLength(managedUserVM.getPassword())) {
-            throw new InvalidPasswordException();
-        }
-        User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
-        mailService.sendActivationEmail(user);
+    public UserDTO registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
+        this.validatePasswordLength(managedUserVM.getPassword());
+        User user = accountService.registerAccount(managedUserVM, managedUserVM.getPassword());
+        return managedUserVM;
     }
 
     /**
@@ -75,10 +77,7 @@ public class AccountResource {
      */
     @GetMapping("/activate")
     public void activateAccount(@RequestParam(value = "key") String key) {
-        Optional<User> user = userService.activateRegistration(key);
-        if (!user.isPresent()) {
-            throw new AccountResourceException("No user was found for this activation key");
-        }
+        accountService.activateAccount(key);
     }
 
     /**
@@ -101,9 +100,7 @@ public class AccountResource {
      */
     @GetMapping("/account")
     public UserDTO getAccount() {
-        return userService.getUserWithAuthorities()
-            .map(UserDTO::new)
-            .orElseThrow(() -> new AccountResourceException("User could not be found"));
+        return accountService.getAccount();
     }
 
     /**
@@ -115,73 +112,50 @@ public class AccountResource {
      */
     @PostMapping("/account")
     public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
-        String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new AccountResourceException("Current user login not found"));
-        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(userLogin))) {
-            throw new EmailAlreadyUsedException();
-        }
-        Optional<User> user = userRepository.findOneByLogin(userLogin);
-        if (!user.isPresent()) {
-            throw new AccountResourceException("User could not be found");
-        }
-        userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(),
-            userDTO.getLangKey(), userDTO.getImageUrl());
+        accountService.saveAccount(userDTO);
     }
 
     /**
      * {@code POST  /account/change-password} : changes the current user's password.
      *
      * @param passwordChangeDto current and new password.
-     * @throws InvalidPasswordException {@code 400 (Bad Request)} if the new password is incorrect.
+     * @throws InvalidPasswordLengthException {@code 400 (Bad Request)} if the new password is incorrect.
      */
     @PostMapping(path = "/account/change-password")
     public void changePassword(@RequestBody PasswordChangeDTO passwordChangeDto) {
-        if (!checkPasswordLength(passwordChangeDto.getNewPassword())) {
-            throw new InvalidPasswordException();
-        }
-        userService.changePassword(passwordChangeDto.getCurrentPassword(), passwordChangeDto.getNewPassword());
+        this.validatePasswordLength(passwordChangeDto.getNewPassword());
+        accountService.changePassword(passwordChangeDto);
     }
 
     /**
      * {@code POST   /account/reset-password/init} : Send an email to reset the password of the user.
      *
      * @param mail the mail of the user.
+     * @return {"message": [MESSAGE_FOR_THE_USER]}
      */
     @PostMapping(path = "/account/reset-password/init")
-    public void requestPasswordReset(@RequestBody String mail) {
-        Optional<User> user = userService.requestPasswordReset(mail);
-        if (user.isPresent()) {
-            mailService.sendPasswordResetMail(user.get());
-        } else {
-            // Pretend the request has been successful to prevent checking which emails really exist
-            // but log that an invalid attempt has been made
-            log.warn("Password reset requested for non existing mail '{}'", mail);
-        }
+    public Message requestPasswordReset(@RequestBody String mail) {
+        log.debug("REST request to begin reset password for: {}", mail);
+        return accountService.requestPasswordReset(mail);
     }
 
     /**
      * {@code POST   /account/reset-password/finish} : Finish to reset the password of the user.
      *
      * @param keyAndPassword the generated key and the new password.
-     * @throws InvalidPasswordException {@code 400 (Bad Request)} if the password is incorrect.
+     * @return {"message": [MESSAGE_FOR_THE_USER]}
+     * @throws InvalidPasswordLengthException {@code 400 (Bad Request)} if the password is incorrect.
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the password could not be reset.
      */
     @PostMapping(path = "/account/reset-password/finish")
-    public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
-        if (!checkPasswordLength(keyAndPassword.getNewPassword())) {
-            throw new InvalidPasswordException();
-        }
-        Optional<User> user =
-            userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
-
-        if (!user.isPresent()) {
-            throw new AccountResourceException("No user was found for this reset key");
-        }
+    public Message finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
+        log.debug("REST request to finish reset password");
+        return accountService.finishPasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
     }
 
-    private static boolean checkPasswordLength(String password) {
-        return !StringUtils.isEmpty(password) &&
-            password.length() >= ManagedUserVM.PASSWORD_MIN_LENGTH &&
-            password.length() <= ManagedUserVM.PASSWORD_MAX_LENGTH;
-    }
+    private void validatePasswordLength(String password) {
+        if (!accountService.checkPasswordLength(password)) {
+            throw new InvalidPasswordLengthException();
+        }
+    }    
 }

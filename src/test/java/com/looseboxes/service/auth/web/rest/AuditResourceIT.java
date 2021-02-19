@@ -5,7 +5,7 @@ import io.github.jhipster.config.JHipsterProperties;
 import com.looseboxes.service.auth.config.audit.AuditEventConverter;
 import com.looseboxes.service.auth.domain.PersistentAuditEvent;
 import com.looseboxes.service.auth.repository.PersistenceAuditEventRepository;
-import com.looseboxes.service.auth.security.AuthoritiesConstants;
+import com.bc.service.util.AuthoritiesConstants;
 
 import com.looseboxes.service.auth.service.AuditEventService;
 import org.junit.jupiter.api.BeforeEach;

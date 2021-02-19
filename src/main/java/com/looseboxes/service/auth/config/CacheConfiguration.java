@@ -42,6 +42,7 @@ public class CacheConfiguration {
             createCache(cm, com.looseboxes.service.auth.domain.User.class.getName());
             createCache(cm, com.looseboxes.service.auth.domain.Authority.class.getName());
             createCache(cm, com.looseboxes.service.auth.domain.User.class.getName() + ".authorities");
+            createCache(cm, com.looseboxes.service.auth.domain.OAuthUser.class.getName());
             // jhipster-needle-ehcache-add-entry
         };
     }

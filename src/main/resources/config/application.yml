@@ -65,6 +65,25 @@ spring:
     # Otherwise, it will be filled in by maven when building the JAR file
     # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
     active: #spring.profiles.active#
+  security: 
+    # @see https://docs.spring.io/spring-security/site/docs/current/reference/html5/  
+    oauth2:
+      client:
+        registration:
+          google:
+            api-key: 
+            client-id: 
+            client-secret: 
+            scope: 
+              - https://www.googleapis.com/auth/userinfo.email
+              - https://www.googleapis.com/auth/userinfo.profile
+          facebook:
+            client-id: 
+            client-secret: 
+            scope: 
+              - email
+              - public_profile
+    
   jmx:
     enabled: false
   data:

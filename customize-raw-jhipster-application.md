@@ -28,7 +28,9 @@ __Generate the jhipster application__
 
 - Change to the application folder and enter the following command:
 
-`jhipster`
+```sh
+jhipster
+```
 
 - Enter answers to the prompted questions as appropriate.
 
@@ -43,37 +45,26 @@ __Import domain__
 - Use the following command to import it e.g file named `domain.jdl` in the
 root folder of the project.
 
-`jhipster import-jdl domain.jdl`
+```sh
+jhipster import-jdl domain.jdl
+```
 
 - After importing the domain info.
 
-  * Commit to git
+  * Run the app
+  ```sh
+  mvnw clean
+  mvnw
+  ```
 
-  * Add change log file: `<yyyyMMddHHmmss>_added_entity_constraints_unique.xml`
-  and any other change logs to folder: `src/main/resources/config/liquidbase/changelogs/`.
-  Also update `src/main/resources/config/liquidbase/master.xml` accordingly.
+  * Enter `Ctrl + C` to stop the app.
+
+  * Commit to git
 
   * Add the relevant jpa annotations to your entity e.g for unique columns:
   `@Column(unique = true)`
 
   * Run `mvnw clean` before starting the app again.
-
-__Rename Model entity__
-
-The name of `ModelMapperImpl` class generated for `ModelMapper` interface
-of `Model` entity conflicts with a bean found in jhipster class
-`io.github.jhipster.config.apidoc.SwaggerAutoConfiguration` This caused errors
-when an attempt was made to build the application. Therefore, before building,
-rename `Model` interface located in the `com.looseboxes.webshop.service.mapper`
-directory, e.g to `ModelMapperRenamedDueToConflictWithSwaggerBean` as shown below:
-
-```java
-@Mapper(componentModel = "spring", uses = {ProductSubcategoryMapper.class, BrandMapper.class})
-public interface ModelMapperRenamedDueToConflictWithSwaggerBean extends EntityMapper<ModelDTO, Model> {
-}
-```
-
-Also rename the test class of the above.
 
 __Update pom.xml__
 
@@ -88,31 +79,6 @@ Add the following to the pom.xml
             <groupId>com.looseboxes</groupId>
             <artifactId>spring-boot-oauth</artifactId>
             <version>0.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.looseboxes</groupId>
-            <artifactId>bcfileclient</artifactId>
-            <version>0.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.looseboxes</groupId>
-            <artifactId>bcsecurity</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.looseboxes</groupId>
-            <artifactId>gmailapi</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.looseboxes</groupId>
-            <artifactId>webform</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.looseboxes</groupId>
-            <artifactId>voguepay-java-client</artifactId>
-            <version>1.0-SNAPSHOT</version>
         </dependency>
 ```      
 
@@ -162,22 +128,7 @@ to:
 </plugin>    
 ```
 
-__Update SpringBootApplication__
-
-- Update the `@SpringBootApplication` annotation as shown below:
-
-```java
-@SpringBootApplication(scanBasePackageClasses = {
-        com.mywebsite.MywebsiteApp.class,
-        com.looseboxes.webform.WebformBasePackageClass.class
-})
-@EnableConfigurationProperties({LiquibaseProperties.class, WebstoreProperties.class})
-```
-
-Where `com.mywebsite.MywebsiteApp.class` refers to the application class of the
-target application.
-
-Also make sure you replace `ApplicationProperties.class` with `WebstoreProperties.class`
+__Update `ApplicationProperties.class`__
 
 __Update .gitignore  and README files__
 
@@ -217,77 +168,25 @@ allow session management, comment out the following if present.
 Also add the following:
 
 ```
+//        .and()
+//            .sessionManagement()
+//            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+            .authorizeRequests()
+             // BEGIN ADD
+            .antMatchers(Endpoints.OAUTH2_SUCCESS).permitAll()
+            .antMatchers(Endpoints.OAUTH2_FAILURE).permitAll()
+            // END ADD
+            .antMatchers("/api/authenticate").permitAll()
+        .
+        .
+        .
         .and()
             .oauth2Login()
-                .loginPage(Endpoints.LOGIN)
                 .loginPage(Endpoints.LOGIN)
                 .defaultSuccessUrl(Endpoints.OAUTH2_SUCCESS, true)
                 .failureUrl(Endpoints.OAUTH2_FAILURE)
 ```
-
-2. Update configuration
-
-Update the security configuration of the target application as shown, adding
-the portion(s) marked as added, and removing those marked as remove.
-
-Below is an extract of an actual `SecurityConfiguration.java` file.
-
-```java
-public void configure(HttpSecurity http) throws Exception {
-    http
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-    .and()
-      .authorizeRequests()
-             // BEGIN ADD
-            .antMatchers(Endpoints.IMAGES + "/**/*").permitAll()              
-            .antMatchers(Endpoints.API_IMAGES + "/**/*").permitAll()              
-            .antMatchers(Endpoints.ACCOUNT + "/**").permitAll()
-            .antMatchers(Endpoints.API_EXT + Endpoints.WEB_DATA).permitAll()          
-            .antMatchers(Endpoints.API_EXT + Endpoints.USER_EXISTS).permitAll()
-            .antMatchers(Endpoints.API_EXT + Endpoints.USER_EVENT + "/**").permitAll()          
-            .antMatchers(Endpoints.SEARCH + "/**").permitAll()                
-            .antMatchers(Endpoints.API_EXT + Endpoints.SEARCH + "/**").permitAll()            
-            .antMatchers(Endpoints.FROM_PAYMENT_GATEWAY).permitAll()     
-            .antMatchers(Endpoints.API_EXT + "/authenticate/**").permitAll()
-            .antMatchers(Endpoints.API_EXT + "/register/**").permitAll()
-            .antMatchers(Endpoints.API_EXT + "/activate").permitAll()
-            .antMatchers(Endpoints.API_EXT + "/account/reset-password/init").permitAll()
-            .antMatchers(Endpoints.API_EXT + "/account/reset-password/finish").permitAll()
-            // END ADD
-            .antMatchers("/api/authenticate").permitAll()
-            .antMatchers("/api/register").permitAll()
-            .antMatchers("/api/activate").permitAll()
-            .antMatchers("/api/account/reset-password/init").permitAll()
-            .antMatchers("/api/account/reset-password/finish").permitAll()
-            // BEGIN ADD
-            .antMatchers(Endpoints.WEBFORM + "/**").authenticated()     
-            .antMatchers(Endpoints.API_WEBFORM + "/**").authenticated() 
-            .antMatchers(Endpoints.API_EXT + "/**").authenticated()
-            .antMatchers(HttpMethod.GET, "/api/**").authenticated()
-            .antMatchers("/api/**").hasAuthority(AuthoritiesConstants.ADMIN)
-            // END ADD
-            // BEGIN REMOVE
-//            .antMatchers("/api/**").authenticated()
-            // END REMOVE
-            .antMatchers("/management/health").permitAll()
-            .antMatchers("/management/info").permitAll()
-            .antMatchers("/management/prometheus").permitAll()
-            .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
-}      
-```
-_Only the relevant section of the method is displayed above__
-
-__ElasticSearch__
-
-If using Elasticsearch 
-
-Add the following annotation to all enities you want to be searchable:
-```java
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "address")
-```
-
-For example, the following entities were excluded: AccountDetais, Transaction, OrderItem, OrderDetails, PaymentDetails,PaymentMethod
 
 __Update AccountResource__
 

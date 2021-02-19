@@ -1,0 +1,3 @@
+- Removed com.looseboxes.service.auth.ext.web.UserMessages#BONUS_AMOUNT
+- Removed com.looseboxes.service.auth.ext.service.AccountService#MailServiceExt
+- Removed com.looseboxes.service.auth.web.rest.UserResource#MailService

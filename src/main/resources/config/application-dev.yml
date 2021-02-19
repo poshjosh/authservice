@@ -16,7 +16,9 @@
 logging:
   level:
     ROOT: DEBUG
+    web: DEBUG
     io.github.jhipster: DEBUG
+    org.springframework.web.filter.CommonsRequestLoggingFilter: INFO # quite detailed
     com.looseboxes.service.auth: DEBUG
 
 spring:
@@ -36,10 +38,12 @@ spring:
     serialization:
       indent-output: true
   datasource:
+    platform: h2
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:h2:file:./target/h2db/db/authservice;DB_CLOSE_DELAY=-1
     username: authservice
     password:
+    continue-on-error: false    
     hikari:
       poolName: Hikari
       auto-commit: false

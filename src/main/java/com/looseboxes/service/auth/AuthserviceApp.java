@@ -1,6 +1,5 @@
 package com.looseboxes.service.auth;
 
-import com.looseboxes.service.auth.config.ApplicationProperties;
 
 import io.github.jhipster.config.DefaultProfileUtil;
 import io.github.jhipster.config.JHipsterConstants;
@@ -21,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 @SpringBootApplication
-@EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
+@EnableConfigurationProperties({LiquibaseProperties.class})
 public class AuthserviceApp {
 
     private static final Logger log = LoggerFactory.getLogger(AuthserviceApp.class);

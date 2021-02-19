@@ -1,12 +1,12 @@
 package com.looseboxes.service.auth.service;
 
+import com.bc.service.util.SecurityUtil;
 import com.looseboxes.service.auth.config.Constants;
 import com.looseboxes.service.auth.domain.Authority;
 import com.looseboxes.service.auth.domain.User;
 import com.looseboxes.service.auth.repository.AuthorityRepository;
 import com.looseboxes.service.auth.repository.UserRepository;
-import com.looseboxes.service.auth.security.AuthoritiesConstants;
-import com.looseboxes.service.auth.security.SecurityUtils;
+import com.bc.service.util.AuthoritiesConstants;
 import com.looseboxes.service.auth.service.dto.UserDTO;
 
 import io.github.jhipster.security.RandomUtil;
@@ -178,7 +178,7 @@ public class UserService {
      * @param imageUrl  image URL of user.
      */
     public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
-        SecurityUtils.getCurrentUserLogin()
+        SecurityUtil.getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
             .ifPresent(user -> {
                 user.setFirstName(firstName);
@@ -238,7 +238,7 @@ public class UserService {
     }
 
     public void changePassword(String currentClearTextPassword, String newPassword) {
-        SecurityUtils.getCurrentUserLogin()
+        SecurityUtil.getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
             .ifPresent(user -> {
                 String currentEncryptedPassword = user.getPassword();
@@ -269,7 +269,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities() {
-        return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
+        return SecurityUtil.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
     }
 
     /**

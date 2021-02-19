@@ -2,9 +2,10 @@ package com.looseboxes.service.auth.web.rest;
 
 import com.looseboxes.service.auth.config.Constants;
 import com.looseboxes.service.auth.domain.User;
+import com.looseboxes.service.auth.domain.User_;
+import com.looseboxes.service.auth.ext.web.Endpoints;
 import com.looseboxes.service.auth.repository.UserRepository;
-import com.looseboxes.service.auth.security.AuthoritiesConstants;
-import com.looseboxes.service.auth.service.MailService;
+import com.bc.service.util.AuthoritiesConstants;
 import com.looseboxes.service.auth.service.UserService;
 import com.looseboxes.service.auth.service.dto.UserDTO;
 import com.looseboxes.service.auth.web.rest.errors.BadRequestAlertException;
@@ -57,7 +58,7 @@ import java.util.*;
  * Another option would be to have a specific JPA entity graph to handle this case.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping(Endpoints.API)
 public class UserResource {
 
     private final Logger log = LoggerFactory.getLogger(UserResource.class);
@@ -69,14 +70,56 @@ public class UserResource {
 
     private final UserRepository userRepository;
 
-    private final MailService mailService;
-
-    public UserResource(UserService userService, UserRepository userRepository, MailService mailService) {
+    public UserResource(UserService userService, UserRepository userRepository) {
         this.userService = userService;
         this.userRepository = userRepository;
-        this.mailService = mailService;
     }
 
+    /**
+     * {@code GET /users/exists} : check if the user exists
+     *
+     * @param propertyName The property name for which to search if a user exists
+     * @param propertyValue The property value for which to search if a user exists
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with 
+     * body {@code true} if the user exists, or {@code false} otherwise.
+     * Returns {@code 400 (BAD_REQUEST)} if {@code propertyName} is not supported
+     */
+    @GetMapping("/users/exists")
+    public ResponseEntity<Boolean> userExists(
+            @RequestParam(name = "propertyName", required = true) String propertyName,
+            @RequestParam(name = "propertyValue", required = true) String propertyValue) {
+        log.debug("REST request to check if User exist by: {} = {}", propertyName, propertyValue);
+        ResponseEntity result;
+        if(this.isNullOrEmpty(propertyValue)) {
+            result = ResponseEntity.ok(Boolean.FALSE);
+        }else{
+            try{
+                result = findUserBy(propertyName, propertyValue)
+                    .map((user) -> ResponseEntity.ok(Boolean.TRUE))
+                    .orElse(ResponseEntity.ok(Boolean.FALSE));
+            }catch(IllegalArgumentException e){
+                result = ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+        }
+        return result;
+    }
+    
+    private Optional<User> findUserBy(String propertyName, String propertyValue) {
+        Optional<User> userOptional;
+        if(User_.LOGIN.equals(propertyName)) {
+            userOptional = userService.getUserWithAuthoritiesByLogin(propertyValue);
+        }else if(User_.EMAIL.equals(propertyName)) {
+            userOptional = userRepository.findOneByEmailIgnoreCase(propertyValue);
+        }else{
+            throw new IllegalArgumentException("Unexpected property name: " + propertyName);
+        }
+        return userOptional;
+    }
+
+    private boolean isNullOrEmpty(String s) {
+        return s == null || s.isEmpty();
+    }
+    
     /**
      * {@code POST  /users}  : Creates a new user.
      * <p>
@@ -103,7 +146,6 @@ public class UserResource {
             throw new EmailAlreadyUsedException();
         } else {
             User newUser = userService.createUser(userDTO);
-            mailService.sendCreationEmail(newUser);
             return ResponseEntity.created(new URI("/api/users/" + newUser.getLogin()))
                 .headers(HeaderUtil.createAlert(applicationName,  "A user is created with identifier " + newUser.getLogin(), newUser.getLogin()))
                 .body(newUser);

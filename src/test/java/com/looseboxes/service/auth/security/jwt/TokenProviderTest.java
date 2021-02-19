@@ -1,6 +1,6 @@
 package com.looseboxes.service.auth.security.jwt;
 
-import com.looseboxes.service.auth.security.AuthoritiesConstants;
+import com.bc.service.util.AuthoritiesConstants;
 
 import java.security.Key;
 import java.util.*;

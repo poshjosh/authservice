@@ -8,6 +8,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Authservice</name>
+    <description>Spring Boot based authentication/authorization service with OAuth2 support</description>
 
     <repositories>
         <!-- jhipster-needle-maven-repository -->
@@ -100,6 +101,15 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>nz.net.ultraq.thymeleaf</groupId>
+            <artifactId>thymeleaf-layout-dialect</artifactId>
+        </dependency>
+        <dependency>    
+            <groupId>com.looseboxes</groupId>
+            <artifactId>spring-boot-oauth</artifactId>
+            <version>0.0.1</version>
+        </dependency>
         <dependency>
             <groupId>io.github.jhipster</groupId>
             <artifactId>jhipster-framework</artifactId>
@@ -233,10 +243,6 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
@@ -318,6 +324,11 @@
             <artifactId>metrics-core</artifactId>
         </dependency>
         <!-- jhipster-needle-maven-add-dependency -->
+        <dependency>
+            <groupId>com.looseboxes</groupId>
+            <artifactId>bcwebserviceutil</artifactId>
+            <version>0.0.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -575,8 +586,9 @@
                         <from>
                             <image>adoptopenjdk:11-jre-hotspot</image>
                         </from>
+                        <!-- registry.hub.docker.com/poshjosh/authservice:latest -->
                         <to>
-                            <image>authservice:latest</image>
+                            <image>poshjosh/authservice:latest</image>
                         </to>
                         <container>
                             <entrypoint>

@@ -1,5 +1,6 @@
 package com.looseboxes.service.auth.web.rest.errors;
 
+import com.looseboxes.service.auth.service.InvalidPasswordException;
 import io.github.jhipster.web.util.HeaderUtil;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -106,6 +107,11 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     @ExceptionHandler
     public ResponseEntity<Problem> handleInvalidPasswordException(com.looseboxes.service.auth.service.InvalidPasswordException ex, NativeWebRequest request) {
         return create(new InvalidPasswordException(), request);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleInvalidPasswordLengthException(InvalidPasswordLengthException ex, NativeWebRequest request) {
+        return create(new InvalidPasswordLengthException(), request);
     }
 
     @ExceptionHandler

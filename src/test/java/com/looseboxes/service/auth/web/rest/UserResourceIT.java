@@ -4,7 +4,7 @@ import com.looseboxes.service.auth.AuthserviceApp;
 import com.looseboxes.service.auth.domain.Authority;
 import com.looseboxes.service.auth.domain.User;
 import com.looseboxes.service.auth.repository.UserRepository;
-import com.looseboxes.service.auth.security.AuthoritiesConstants;
+import com.bc.service.util.AuthoritiesConstants;
 import com.looseboxes.service.auth.service.dto.UserDTO;
 import com.looseboxes.service.auth.service.mapper.UserMapper;
 import com.looseboxes.service.auth.web.rest.vm.ManagedUserVM;

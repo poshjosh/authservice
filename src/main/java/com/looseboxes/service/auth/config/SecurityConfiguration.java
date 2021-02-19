@@ -1,5 +1,7 @@
 package com.looseboxes.service.auth.config;
 
+import com.bc.service.util.AuthoritiesConstants;
+import com.looseboxes.service.auth.ext.web.Endpoints;
 import com.looseboxes.service.auth.security.*;
 import com.looseboxes.service.auth.security.jwt.*;
 
@@ -11,7 +13,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -69,11 +70,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .and()
             .frameOptions()
             .deny()
-        .and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//        .and()
+//            .sessionManagement()
+//            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
             .authorizeRequests()
+             // BEGIN ADD
+            .antMatchers(Endpoints.OAUTH2_SUCCESS).permitAll()
+            .antMatchers(Endpoints.OAUTH2_FAILURE).permitAll()
+            // END ADD
             .antMatchers("/api/authenticate").permitAll()
             .antMatchers("/api/register").permitAll()
             .antMatchers("/api/activate").permitAll()
@@ -84,6 +89,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/management/info").permitAll()
             .antMatchers("/management/prometheus").permitAll()
             .antMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
+        .and()
+            .oauth2Login()
+                .loginPage(Endpoints.LOGIN)
+                .defaultSuccessUrl(Endpoints.OAUTH2_SUCCESS, true)
+                .failureUrl(Endpoints.OAUTH2_FAILURE)
         .and()
             .httpBasic()
         .and()
